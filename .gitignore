@@ -2,11 +2,6 @@
 __pycache__/
 *.pyc
 
-# Databases
-*.db
-*.sqlite
-*.sqlite3
-
 # Models
 *.pt
 *.pth
@@ -17,11 +12,6 @@ runs/
 
 # Temporary files
 temp/
-
-# Images
-*.jpg
-*.jpeg
-*.png
 
 # Backup files
 *.bak
@@ -78,3 +68,4 @@ __pycache__/
 .ruff_cache/
 
 icons/
+requirements.txt
