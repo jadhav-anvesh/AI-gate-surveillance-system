@@ -1,0 +1,3 @@
+RTSP_STREAM_URL = (
+    "REDACTED_RTSP_URL"
+)

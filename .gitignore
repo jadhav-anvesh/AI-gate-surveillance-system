@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.pyc
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Models
+*.pt
+*.pth
+*.onnx
+
+# Training outputs
+runs/
+
+# Temporary files
+temp/
+
+# Images
+*.jpg
+*.jpeg
+*.png
+
+# Backup files
+*.bak
+*.save
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+venv/
+
+dependencies/
+*.pt
+*.pth
+*.onnx
+
+backend/models/
+
+# Old streamlit/experimental files
+analysis.py
+analysis[[]stored].py
+depth_visualization.py
+prompt_based_detection.py
+accident_monitoring.py
+main.py
+parameters.py
+settings.py
+utils.py
+STUDY_PLAN.md
+
+# Models
+backend/models/
+dependencies/
+
+# Runtime
+temp/
+runs/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Images
+*.jpg
+*.jpeg
+*.png
+
+# Cache
+__pycache__/
+*.pyc
+.ruff_cache/
+
+icons/
