@@ -5,13 +5,19 @@
      "iou_threshold": 0.5,
      "frame_rate": 10,
      "classes_to_detect": [
+          "animal",
           "autorickshaw",
           "bicycle",
           "bus",
           "car",
           "caravan",
           "motorcycle",
+          "person",
+          "rider",
+          "traffic light",
+          "traffic sign",
           "trailer",
+          "train",
           "truck",
           "vehicle fallback"
      ]

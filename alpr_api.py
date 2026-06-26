@@ -49,7 +49,7 @@ def read_plate_from_image(img, tracker_id, frame_number, session_id):
 
 
 def get_best_plate(tracker_id, session_id=None):
-    frames = sorted(glob.glob(f"temp/alpr_frames/tracker_{tracker_id}_frame*.jpg"))
+    frames = sorted(glob.glob(f"temp/alpr_frames/session_{session_id}_tracker_{tracker_id}_frame*.jpg"))
     readings = []
     best_bbox = None
 
