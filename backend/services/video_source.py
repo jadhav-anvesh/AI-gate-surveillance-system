@@ -42,7 +42,6 @@ class VideoSource:
         while not self.stop_event.is_set():
 
             ret, frame = cap.read()
-            original_frame = frame.copy()
             if not ret:
 
                 cap.release()
@@ -52,6 +51,7 @@ class VideoSource:
                 )
 
                 continue
+            original_frame = frame.copy()
 
             frame_count += 1
 

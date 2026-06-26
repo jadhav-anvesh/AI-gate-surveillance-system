@@ -303,7 +303,7 @@ class VideoProcessingPipeline:
             labels.append(
                 f"{int(speed)} km/h"
             )
-            
+
             class_name = id_cls_map.get(
                 int(class_id),
                 f"UNKNOWN_{class_id}"
@@ -369,10 +369,12 @@ class VideoProcessingPipeline:
             scale_y = original_frame.shape[0] / frame.shape[0]
 
             for i, tracker_id in enumerate(detections.tracker_id):
-                if tracker_id not in self.seen_tracker_ids:
-                    self.seen_tracker_ids[tracker_id] = []
+                key = f"{session_id}_{tracker_id}"
 
-                if len(self.seen_tracker_ids[tracker_id]) < 5:
+                if key not in self.seen_tracker_ids:
+                    self.seen_tracker_ids[key] = []
+
+                if len(self.seen_tracker_ids[key]) < 5:
                     x1, y1, x2, y2 = detections.xyxy[i]
 
                     # Scale coordinates from 360p space to original frame space
@@ -385,18 +387,15 @@ class VideoProcessingPipeline:
                     crop = original_frame[y1:y2, x1:x2]
 
                     if crop.size > 0:
-                        self.seen_tracker_ids[tracker_id].append(True)
-                        frame_idx = len(self.seen_tracker_ids[tracker_id])
-                        cv2.imwrite(f"temp/alpr_frames/tracker_{tracker_id}_frame{frame_idx}.jpg", crop)
-                        print(f"[ALPR] Saved crop frame {frame_idx} for tracker_id={tracker_id}")
+                        self.seen_tracker_ids[key].append(True)
+                        frame_idx = len(self.seen_tracker_ids[key])
+                        cv2.imwrite(f"temp/alpr_frames/session_{session_id}_tracker_{tracker_id}_frame{frame_idx}.jpg", crop)
+                        print(f"[ALPR] Saved High_RES crop frame {frame_idx} for session_id={session_id} tracker_id={tracker_id}")
 
-                if len(self.seen_tracker_ids[tracker_id]) == 5:
+                if len(self.seen_tracker_ids[key]) == 5:
                     from alpr_api import get_best_plate
-                    alpr_result = get_best_plate(tracker_id, session_id)
-
-                    if alpr_result is not None:
-                        self.alpr_results[tracker_id] = alpr_result
-                    print(f"[ALPR RESULT] tracker_id={tracker_id} → {alpr_result}")   #new
+                    plate = get_best_plate(tracker_id, session_id=session_id)
+                    print(f"[ALPR RESULT] session_id={session_id} tracker_id={tracker_id} → {plate}")  #new
 
         if id_cls_map is not None:
 
