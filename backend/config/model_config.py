@@ -1,10 +1,6 @@
-
 MODEL_MAP_SET_A = {
     "YOLO-N": ("yolo", "backend/models/yolov10n_best.pt"),
-    "RF-DETR": (
-        "rfdetr",
-        "backend/models/rfdetr_best.pth"
-    ),
+    "RF-DETR": ("rfdetr", "backend/models/rfdetr_best.pth"),
 }
 
 SET_A_CLS_MAP = {
@@ -25,14 +21,8 @@ SET_A_CLS_MAP = {
     "vehicle fallback": 14,
 }
 
-MODEL_SETS = {
-    "Trained Model": (MODEL_MAP_SET_A, SET_A_CLS_MAP)
-}
+MODEL_SETS = {"Trained Model": (MODEL_MAP_SET_A, SET_A_CLS_MAP)}
 
-MODEL_MAPS = {
-    "Trained Model": MODEL_MAP_SET_A
-}
+MODEL_MAPS = {"Trained Model": MODEL_MAP_SET_A}
 
-CLASS_MAPS = {
-    "Trained Model": SET_A_CLS_MAP
-}
+CLASS_MAPS = {"Trained Model": SET_A_CLS_MAP}
