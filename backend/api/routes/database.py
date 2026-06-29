@@ -27,15 +27,13 @@ from backend.database.models import (
 # ============================================================================
 
 # All endpoints in this module are prefixed with `/database`.
-router = APIRouter(
-    prefix="/database",
-    tags=["Database"]
-)
+router = APIRouter(prefix="/database", tags=["Database"])
 
 
 # ============================================================================
 # Database Statistics
 # ============================================================================
+
 
 @router.get("/statistics")
 def get_database_statistics():
@@ -54,7 +52,7 @@ def get_database_statistics():
         return {
             "total_sessions": db.query(ProcessingSession).count(),
             "total_raw_detection_records": db.query(DetectionRecord).count(),
-            "total_unique_vehicles": db.query(VehicleSummary).count()
+            "total_unique_vehicles": db.query(VehicleSummary).count(),
         }
 
     finally:
@@ -66,6 +64,7 @@ def get_database_statistics():
 # ============================================================================
 # Session Endpoints
 # ============================================================================
+
 
 @router.get("/sessions")
 def get_sessions():
@@ -90,7 +89,7 @@ def get_sessions():
                 "camera_type": s.camera_type,
                 "status": s.status,
                 "start_time": str(s.start_time),
-                "end_time": str(s.end_time)
+                "end_time": str(s.end_time),
             }
             for s in sessions
         ]
@@ -114,31 +113,31 @@ def get_session_details(session_id: int):
 
     try:
         # Retrieve the requested processing session.
-        session = db.query(ProcessingSession).filter(
-            ProcessingSession.id == session_id
-        ).first()
+        session = (
+            db.query(ProcessingSession)
+            .filter(ProcessingSession.id == session_id)
+            .first()
+        )
 
         if session is None:
-            return {
-                "error": "Session not found"
-            }
+            return {"error": "Session not found"}
 
         # Retrieve all raw detections belonging to this session.
-        detections = db.query(DetectionRecord).filter(
-            DetectionRecord.session_id == session_id
-        ).all()
+        detections = (
+            db.query(DetectionRecord)
+            .filter(DetectionRecord.session_id == session_id)
+            .all()
+        )
 
         # Retrieve one summary record for every tracked vehicle.
-        vehicle_summary = db.query(VehicleSummary).filter(
-            VehicleSummary.session_id == session_id
-        ).all()
+        vehicle_summary = (
+            db.query(VehicleSummary)
+            .filter(VehicleSummary.session_id == session_id)
+            .all()
+        )
 
         # Extract valid speed measurements for averaging.
-        speeds = [
-            d.speed
-            for d in detections
-            if d.speed is not None
-        ]
+        speeds = [d.speed for d in detections if d.speed is not None]
 
         # Aggregate the number of tracked vehicles for
         # each detected vehicle class.
@@ -156,12 +155,8 @@ def get_session_details(session_id: int):
             "end_time": str(session.end_time),
             "total_raw_detection_records": len(detections),
             "total_unique_vehicles": len(vehicle_summary),
-            "average_speed": (
-                sum(speeds) / len(speeds)
-                if len(speeds) > 0
-                else None
-            ),
-            "vehicle_counts": vehicle_counts
+            "average_speed": (sum(speeds) / len(speeds) if len(speeds) > 0 else None),
+            "vehicle_counts": vehicle_counts,
         }
 
     finally:
@@ -171,6 +166,7 @@ def get_session_details(session_id: int):
 # ============================================================================
 # Detection Records
 # ============================================================================
+
 
 @router.get("/detections")
 def get_detections(limit: int = 50):
@@ -204,7 +200,7 @@ def get_detections(limit: int = 50):
                 "confidence": d.confidence,
                 "speed": d.speed,
                 "center_x": d.center_x,
-                "center_y": d.center_y
+                "center_y": d.center_y,
             }
             for d in detections
         ]
@@ -216,6 +212,7 @@ def get_detections(limit: int = 50):
 # ============================================================================
 # Vehicle Summary
 # ============================================================================
+
 
 @router.get("/vehicle_summary")
 def get_vehicle_summary():
@@ -231,11 +228,7 @@ def get_vehicle_summary():
         # Retrieve one summary record per tracked vehicle.
         # Each record contains aggregated statistics collected
         # throughout the vehicle's lifetime in the session.
-        vehicles = (
-            db.query(VehicleSummary)
-            .order_by(VehicleSummary.id.desc())
-            .all()
-        )
+        vehicles = db.query(VehicleSummary).order_by(VehicleSummary.id.desc()).all()
 
         # Format database records into a JSON response.
         return [
@@ -250,7 +243,7 @@ def get_vehicle_summary():
                 "last_center_x": v.last_center_x,
                 "last_center_y": v.last_center_y,
                 "plate_bbox": v.plate_bbox,
-                "plate_text": v.plate_text
+                "plate_text": v.plate_text,
             }
             for v in vehicles
         ]

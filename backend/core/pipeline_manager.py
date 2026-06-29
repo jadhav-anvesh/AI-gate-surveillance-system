@@ -143,7 +143,6 @@ class PipelineManager:
         """
 
         while self.is_running:
-
             # ----------------------------------------------------------
             # Wait until both the video source and
             # processing pipeline have been initialized.
@@ -182,7 +181,7 @@ class PipelineManager:
                     iou_threshold=self.iou_threshold,
                     class_ids=self.selected_class_ids,
                     id_cls_map=self.id_cls_map,
-                    session_id=self.current_session_id
+                    session_id=self.current_session_id,
                 )
             except Exception:
                 logger.exception("Frame processing failed.")
@@ -192,7 +191,7 @@ class PipelineManager:
             # Generate visualization frames(Bounding box) for the frontend.
             # ----------------------------------------------------------
             try:
-                #only for the RFDETR model as for yolo ultralytics already manages that inbuilt
+                # only for the RFDETR model as for yolo ultralytics already manages that inbuilt
                 if isinstance(result["results"], sv.Detections):
                     detection_frame = frame.copy()
 
@@ -207,28 +206,29 @@ class PipelineManager:
                         if tracker_ids is None:
                             for class_name, confidence in zip(
                                 result["results"].data["class_name"],
-                                result["results"].confidence
+                                result["results"].confidence,
                             ):
                                 labels.append(f"{class_name} {confidence:.2f}")
                         else:
                             for tracker_id, class_name, confidence in zip(
                                 tracker_ids,
                                 result["results"].data["class_name"],
-                                result["results"].confidence
+                                result["results"].confidence,
                             ):
-                                labels.append(f"ID:{tracker_id} {class_name} {confidence:.2f}")
+                                labels.append(
+                                    f"ID:{tracker_id} {class_name} {confidence:.2f}"
+                                )
 
                     detection_frame = box_annotator.annotate(
-                        scene=detection_frame,
-                        detections=result["results"]
+                        scene=detection_frame, detections=result["results"]
                     )
                     detection_frame = label_annotator.annotate(
                         scene=detection_frame,
                         detections=result["results"],
-                        labels=labels
+                        labels=labels,
                     )
                 else:
-                    #YOLO
+                    # YOLO
                     detection_frame = result["results"][0].plot()
 
                 # Cache the latest frames for API streaming.
@@ -242,7 +242,10 @@ class PipelineManager:
                 # and display lane statistics.
                 # ------------------------------------------------------
                 for lane_index, line_zone in enumerate(pipeline.line_zones):
-                    start = (int(line_zone.vector.start.x), int(line_zone.vector.start.y))
+                    start = (
+                        int(line_zone.vector.start.x),
+                        int(line_zone.vector.start.y),
+                    )
                     end = (int(line_zone.vector.end.x), int(line_zone.vector.end.y))
 
                     cv2.line(flow_frame, start, end, (0, 255, 0), 3)
@@ -257,10 +260,7 @@ class PipelineManager:
                     mid_y = int((start[1] + end[1]) / 2)
 
                     (text_w, text_h), _ = cv2.getTextSize(
-                        text,
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.7,
-                        2
+                        text, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2
                     )
 
                     text_x = mid_x - text_w // 2
@@ -271,7 +271,7 @@ class PipelineManager:
                         (text_x - 5, text_y - text_h - 5),
                         (text_x + text_w + 5, text_y + 5),
                         (0, 0, 0),
-                        -1
+                        -1,
                     )
 
                     cv2.putText(
@@ -281,7 +281,7 @@ class PipelineManager:
                         cv2.FONT_HERSHEY_SIMPLEX,
                         0.7,
                         (0, 255, 0),
-                        2
+                        2,
                     )
 
                 # Cache the latest frames for API streaming.
@@ -333,7 +333,7 @@ class PipelineManager:
                     confidence=confidence,
                     speed=self.pipeline.speed.get_tracker_speed(tracker_id),
                     center_x=center_x,
-                    center_y=center_y
+                    center_y=center_y,
                 )
 
                 self.detection_db.upsert_vehicle_summary(
@@ -343,7 +343,7 @@ class PipelineManager:
                     class_name=class_name,
                     speed=self.pipeline.speed.get_tracker_speed(tracker_id),
                     center_x=center_x,
-                    center_y=center_y
+                    center_y=center_y,
                 )
 
                 # --------------------------------------------------
@@ -358,7 +358,7 @@ class PipelineManager:
                         self.detection_db.update_plate_bbox(
                             session_id=self.current_session_id,
                             track_id=tracker_id,
-                            bbox=bbox
+                            bbox=bbox,
                         )
                         del self.pipeline.alpr_results[tracker_id]
 
@@ -377,7 +377,7 @@ class PipelineManager:
                 ),
                 "flow_statistics": result.get("flow_statistics", {}),
                 "density_statistics": result.get("density_statistics", {}),
-                "speed_statistics": result.get("speed_statistics", {})
+                "speed_statistics": result.get("speed_statistics", {}),
             }
 
     # ========================================================================
@@ -394,10 +394,7 @@ class PipelineManager:
 
         self.is_running = True
 
-        self.processing_thread = Thread(
-            target=self.processing_loop,
-            daemon=True
-        )
+        self.processing_thread = Thread(target=self.processing_loop, daemon=True)
         self.processing_thread.start()
 
     def stop_processing(self):
@@ -455,7 +452,7 @@ class PipelineManager:
             "running": self.is_running,
             "pipeline_loaded": self.pipeline is not None,
             "video_source_loaded": self.video_source is not None,
-            "statistics_available": len(self.latest_statistics) > 0
+            "statistics_available": len(self.latest_statistics) > 0,
         }
 
     def reset(self):
@@ -485,9 +482,7 @@ class PipelineManager:
 
         try:
             session = ProcessingSession(
-                camera_type=camera_type,
-                status="running",
-                start_time=datetime.now()
+                camera_type=camera_type, status="running", start_time=datetime.now()
             )
             db.add(session)
             db.commit()
@@ -511,9 +506,11 @@ class PipelineManager:
         db = SessionLocal()
 
         try:
-            session = db.query(ProcessingSession).filter(
-                ProcessingSession.id == self.current_session_id
-            ).first()
+            session = (
+                db.query(ProcessingSession)
+                .filter(ProcessingSession.id == self.current_session_id)
+                .first()
+            )
 
             if session:
                 session.status = "completed"

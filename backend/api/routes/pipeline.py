@@ -27,13 +27,10 @@ from backend.api.schemas.pipeline import PipelineStartRequest
 from backend.api.schemas.config import (
     FlowConfigRequest,
     DensityConfigRequest,
-    SpeedConfigRequest
+    SpeedConfigRequest,
 )
 
-from backend.config.model_config import (
-    MODEL_MAPS,
-    CLASS_MAPS
-)
+from backend.config.model_config import MODEL_MAPS, CLASS_MAPS
 
 from backend.core.pipeline_manager import CONFIG_PATH
 from backend.core.state import manager
@@ -47,15 +44,13 @@ logger = logging.getLogger(__name__)
 # Router
 # ============================================================================
 
-router = APIRouter(
-    prefix="/pipeline",
-    tags=["pipeline"]
-)
+router = APIRouter(prefix="/pipeline", tags=["pipeline"])
 
 
 # ============================================================================
 # Pipeline Status
 # ============================================================================
+
 
 @router.get("/statistics")
 def pipeline_statistics():
@@ -125,6 +120,7 @@ def pipeline_statistics():
     stats = manager.get_statistics()
     return stats
 
+
 @router.get("/status")
 def pipeline_status():
     """
@@ -132,9 +128,7 @@ def pipeline_status():
     Used by the frontend to determine whether the
     processing pipeline is available.
     """
-    return {
-        "pipeline": "ready"
-    }
+    return {"pipeline": "ready"}
 
 
 @router.get("/current_config")
@@ -157,15 +151,13 @@ def pipeline_debug():
     pipeline = manager.get_pipeline()
 
     if pipeline is None:
-        return {
-            "pipeline_loaded": False
-        }
+        return {"pipeline_loaded": False}
 
     return {
         "pipeline_loaded": True,
         "flow_enabled": len(pipeline.line_zones) > 0,
         "density_enabled": pipeline.density.heatmap is not None,
-        "speed_enabled": pipeline.view_transformer is not None
+        "speed_enabled": pipeline.view_transformer is not None,
     }
 
 
@@ -185,15 +177,15 @@ def debug_full():
         "density_id": id(pipeline.density),
         "heatmap_exists": pipeline.density.heatmap is not None,
         "heatmap_shape": (
-            None if pipeline.density.heatmap is None
-            else pipeline.density.heatmap.shape
-        )
+            None if pipeline.density.heatmap is None else pipeline.density.heatmap.shape
+        ),
     }
 
 
 # ============================================================================
 # Pipeline Lifecycle
 # ============================================================================
+
 
 @router.post("/start")
 def start_pipeline(request: PipelineStartRequest):
@@ -223,7 +215,7 @@ def start_pipeline(request: PipelineStartRequest):
         "confidence_threshold": request.confidence_threshold,
         "iou_threshold": request.iou_threshold,
         "frame_rate": request.frame_rate,
-        "classes_to_detect": request.classes_to_detect
+        "classes_to_detect": request.classes_to_detect,
     }
 
     try:
@@ -238,10 +230,7 @@ def start_pipeline(request: PipelineStartRequest):
     # ------------------------------------------------------------------
     model_map = MODEL_MAPS[request.camera_type]
 
-    cls_map = {
-        v: k
-        for k, v in CLASS_MAPS[request.camera_type].items()
-    }
+    cls_map = {v: k for k, v in CLASS_MAPS[request.camera_type].items()}
 
     selected_class_ids = [
         CLASS_MAPS[request.camera_type][class_name]
@@ -253,15 +242,10 @@ def start_pipeline(request: PipelineStartRequest):
     # Create the processing pipeline and RTSP video source.
     # ------------------------------------------------------------------
     pipeline = VideoProcessingPipeline(
-        det_mode=request.det_mode,
-        model_map=model_map,
-        frame_rate=request.frame_rate
+        det_mode=request.det_mode, model_map=model_map, frame_rate=request.frame_rate
     )
 
-    video_source = VideoSource(
-        source=request.rtsp_url,
-        target_fps=request.frame_rate
-    )
+    video_source = VideoSource(source=request.rtsp_url, target_fps=request.frame_rate)
 
     # ------------------------------------------------------------------
     # Register all runtime objects with the global pipeline manager.
@@ -269,8 +253,7 @@ def start_pipeline(request: PipelineStartRequest):
     manager.set_pipeline(pipeline)
     manager.set_class_map(cls_map)
     manager.set_detection_thresholds(
-        request.confidence_threshold,
-        request.iou_threshold
+        request.confidence_threshold, request.iou_threshold
     )
     manager.create_session(request.camera_type)
     manager.set_video_source(video_source)
@@ -285,7 +268,7 @@ def start_pipeline(request: PipelineStartRequest):
     return {
         "status": "started",
         "camera_type": request.camera_type,
-        "det_mode": request.det_mode
+        "det_mode": request.det_mode,
     }
 
 
@@ -301,14 +284,13 @@ def stop_pipeline():
     manager.stop_processing()
     manager.close_session()
 
-    return {
-        "status": "stopped"
-    }
+    return {"status": "stopped"}
 
 
 # ============================================================================
 # Pipeline Configuration
 # ============================================================================
+
 
 @router.post("/config/flow")
 def configure_flow(request: FlowConfigRequest):
@@ -319,17 +301,12 @@ def configure_flow(request: FlowConfigRequest):
     pipeline = manager.get_pipeline()
 
     if pipeline is None:
-        return {
-            "error": "pipeline not loaded"
-        }
+        return {"error": "pipeline not loaded"}
 
     # Configure line zones used for vehicle counting.
     pipeline.initialize_flow_zones(request.line_params)
 
-    return {
-        "status": "flow configured",
-        "lines": len(request.line_params)
-    }
+    return {"status": "flow configured", "lines": len(request.line_params)}
 
 
 @router.post("/config/density")
@@ -341,16 +318,14 @@ def configure_density(request: DensityConfigRequest):
     pipeline = manager.get_pipeline()
 
     if pipeline is None:
-        return {
-            "error": "pipeline not loaded"
-        }
-                                #frame size
+        return {"error": "pipeline not loaded"}
+        # frame size
     pipeline.initialize_density((request.height, request.width, 3))
 
     return {
         "status": "density configured",
         "width": request.width,
-        "height": request.height
+        "height": request.height,
     }
 
 
@@ -364,23 +339,19 @@ def configure_speed(request: SpeedConfigRequest):
     pipeline = manager.get_pipeline()
 
     if pipeline is None:
-        return {
-            "error": "pipeline not loaded"
-        }
+        return {"error": "pipeline not loaded"}
 
     pipeline.initialize_speed_transform(
-        source=np.array(request.source_points),
-        target=np.array(request.target_points)
+        source=np.array(request.source_points), target=np.array(request.target_points)
     )
 
-    return {
-        "status": "speed configured"
-    }
+    return {"status": "speed configured"}
 
 
 # ============================================================================
 # Utility Functions
 # ============================================================================
+
 
 def resize_frame_to_360p(frame):
     """
@@ -403,7 +374,8 @@ def resize_frame_to_360p(frame):
 # Frame Streaming Endpoints
 # ============================================================================
 
-#used in the pipeline control tab in flow and speed estimation settings
+
+# used in the pipeline control tab in flow and speed estimation settings
 @router.get("/preview_frame")
 def preview_frame():
     """
@@ -418,20 +390,16 @@ def preview_frame():
     cap.release()
 
     if not success:
-        return {
-            "error": "Unable to capture frame"
-        }
+        return {"error": "Unable to capture frame"}
 
     frame = resize_frame_to_360p(frame)
     # Convert NumPy array into JPEG bytes for HTTP response.
     _, buffer = cv2.imencode(".jpg", frame)
 
-    return Response(
-        content=buffer.tobytes(),
-        media_type="image/jpeg"
-    )
+    return Response(content=buffer.tobytes(), media_type="image/jpeg")
 
-#used in the analysis dashboard
+
+# used in the analysis dashboard
 @router.get("/live_frame")
 def live_frame():
     """
@@ -445,10 +413,7 @@ def live_frame():
 
     _, buffer = cv2.imencode(".jpg", frame)
 
-    return Response(
-        content=buffer.tobytes(),
-        media_type="image/jpeg"
-    )
+    return Response(content=buffer.tobytes(), media_type="image/jpeg")
 
 
 @router.get("/flow_frame")
@@ -464,10 +429,7 @@ def flow_frame():
 
     _, buffer = cv2.imencode(".jpg", frame)
 
-    return Response(
-        content=buffer.tobytes(),
-        media_type="image/jpeg"
-    )
+    return Response(content=buffer.tobytes(), media_type="image/jpeg")
 
 
 @router.get("/density_frame")
@@ -482,7 +444,4 @@ def density_frame():
 
     _, buffer = cv2.imencode(".jpg", frame)
 
-    return Response(
-        content=buffer.tobytes(),
-        media_type="image/jpeg"
-    )
+    return Response(content=buffer.tobytes(), media_type="image/jpeg")
