@@ -382,7 +382,7 @@ def preview_frame():
     Captures a single frame directly from the RTSP camera
     feed for use as a lightweight preview image.
     """
-    rtsp_url = "REDACTED_RTSP_URL"
+    rtsp_url = #add proper URL
 
     cap = cv2.VideoCapture(rtsp_url)
 
