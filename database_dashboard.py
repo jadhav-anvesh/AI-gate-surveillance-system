@@ -75,7 +75,7 @@ DEFAULT_FRAME_HEIGHT = 480
 # NOTE: credentials are embedded directly in this URL. Fine for a local
 # SRIP demo, but if this file is ever committed/shared more broadly,
 # move this to an environment variable instead.
-RTSP_URL = "REDACTED_RTSP_URL"
+RTSP_URL = #add proper URL
 
 # ==========================================
 # BACKEND HTTP HELPERS
