@@ -8,7 +8,7 @@ A real-time AI-powered gate surveillance and vehicle analytics system for intell
 
 This project was developed as part of the **Summer Research Internship Program (SRIP)**.
 
-The application processes live CCTV or RTSP streams and performs real-time vehicle analytics, including:
+The application processes live RTSP streams and performs real-time vehicle analytics, including:
 
 * 🚗 Vehicle Detection
 * 🎯 Multi-Object Tracking
@@ -18,6 +18,7 @@ The application processes live CCTV or RTSP streams and performs real-time vehic
 * 🚦 Vehicle Speed Estimation
 * 📈 Interactive Analytics Dashboard
 * 🔍 Automatic License Plate Recognition (ALPR) *(Under Development)*
+* Please replace the RTSP links with your rtsp_url in database_dashboard, api/routes/pipeline and api/config/camera_config
 
 The system has been redesigned from a **monolithic Streamlit application** into a **modular FastAPI backend**, making it scalable, maintainable, and easier to extend.
 
